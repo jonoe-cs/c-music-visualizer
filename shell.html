@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Music Visualizer</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0a0a0c; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+    #canvas-container { position: relative; }
+    canvas { display: block; }
+    #audio-input, #art-input { display: none; }
+  </style>
+</head>
+<body>
+  <div id="canvas-container">
+    <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+  </div>
+
+  <input type="file" id="audio-input" accept="audio/*">
+  <input type="file" id="art-input"   accept="image/*">
+
+  <script>
+    var Module = {
+      canvas: document.getElementById('canvas'),
+      print:    function(t) { console.log(t); },
+      printErr: function(t) { console.warn(t); }
+    };
+
+    function triggerAudioUpload() {
+      document.getElementById('audio-input').click();
+    }
+
+    document.getElementById('audio-input').addEventListener('change', function(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        var data = new Uint8Array(ev.target.result);
+
+        FS.writeFile('/tmp/audio', data);
+
+        Module.ccall('LoadAudioFromVFS', null, [], []);
+      };
+      reader.readAsArrayBuffer(file);
+      e.target.value = '';
+    });
+
+    function triggerArtUpload() {
+      document.getElementById('art-input').click();
+    }
+
+    document.getElementById('art-input').addEventListener('change', function(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        var data = new Uint8Array(ev.target.result);
+
+        var ext  = file.name.split('.').pop().toLowerCase();
+        var path = '/tmp/art.' + ext;
+
+        FS.writeFile('/tmp/art', data);
+
+        Module.ccall('LoadArtFromVFS', null, [], []);
+      };
+      reader.readAsArrayBuffer(file);
+      e.target.value = '';
+    });
+  </script>
+
+  {{{ SCRIPT }}}
+
+</body>
+</html>
